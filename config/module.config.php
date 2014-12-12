@@ -8,7 +8,7 @@ return array(
     ),
     'service_manager' =>  array(
     	'invokables' => array(
-    		'json_server' => 'JsonRpcServer\Json\Server\Server'
+    		'json_server' => 'JRpc\Json\Server\Server'
     	),
     ),
     'router' => array(
@@ -27,7 +27,7 @@ return array(
     ),
     'controllers' => array(
         'invokables' => array(
-            'json_rpc' => 'JsonRpcServer\Controller\JsonRpcController',
+            'json_rpc' => 'JRpc\Controller\JsonRpcController',
         ),
     ),
     'json-rpc-server' => array(

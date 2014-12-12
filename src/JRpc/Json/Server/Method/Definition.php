@@ -1,6 +1,6 @@
 <?php
 
-namespace JsonRpcServer\Json\Server\Method;
+namespace JRpc\Json\Server\Method;
 
 use Zend\Server\Method\Definition as BaseDefinition;
 
@@ -16,7 +16,7 @@ class Definition extends BaseDefinition
      * 
      * @param string $nameSm
      * 
-     * @return \JsonRpcServer\Json\Server\Method\Definition
+     * @return \JRpc\Json\Server\Method\Definition
      */
     public function setNameSm($nameSm)
     {

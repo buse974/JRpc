@@ -1,6 +1,6 @@
 <?php
 
-namespace JsonRpcServer;
+namespace JRpc;
 
 use Zend\ModuleManager\Feature\ConfigProviderInterface;
 

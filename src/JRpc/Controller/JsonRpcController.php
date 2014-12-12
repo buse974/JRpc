@@ -1,9 +1,9 @@
 <?php
 
-namespace JsonRpcServer\Controller;
+namespace JRpc\Controller;
 
 use Zend\Mvc\Controller\AbstractActionController;
-use JsonRpcServer\Json\Server\Server;
+use JRpc\Json\Server\Server;
 
 class JsonRpcController extends AbstractActionController
 {

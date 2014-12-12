@@ -1,6 +1,6 @@
 <?php
 
-namespace JsonRpcServer\Json\Server;
+namespace JRpc\Json\Server;
 
 use Zend\ServiceManager\ServiceLocatorInterface;
 use Zend\Json\Server\Server as BaseServer;
@@ -8,8 +8,8 @@ use Zend\EventManager\EventManagerAwareInterface;
 use Zend\EventManager\EventManagerInterface;
 use Zend\EventManager\EventManager;
 use Zend\Json\Server\Error as RPCERROR;
-use JsonRpcServer\Json\Server\Exception\AbstractException;
-use JsonRpcServer\Json\Server\Exception\ParseErrorException;
+use JRpc\Json\Server\Exception\AbstractException;
+use JRpc\Json\Server\Exception\ParseErrorException;
 use Zend\ServiceManager\ServiceLocatorAwareInterface;
 use Zend\Server\Reflection;
 use Zend\Server\Method\Prototype;

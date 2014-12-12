@@ -1,6 +1,6 @@
 <?php
 
-namespace JsonRpcServer\Json\Server\Exception;
+namespace JRpc\Json\Server\Exception;
 
 use Zend\Json\Server\Exception\ExceptionInterface;
 use \Exception;

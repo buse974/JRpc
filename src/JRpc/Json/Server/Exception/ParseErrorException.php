@@ -1,8 +1,8 @@
 <?php
 
-namespace JsonRpcServer\Json\Server\Exception;
+namespace JRpc\Json\Server\Exception;
 
-use JsonRpcServer\Json\Server\Error;
+use JRpc\Json\Server\Error;
 
 class ParseErrorException extends AbstractException
 {
