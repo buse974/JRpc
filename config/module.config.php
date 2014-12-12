@@ -33,7 +33,7 @@ return array(
     'json-rpc-server' => array(
         'cache' => 'storage_memcached',
         'log' => 'log-system',
-    	'persistence' => false,
+        'persistence' => false,
         'services' => array(
         ),
     ),

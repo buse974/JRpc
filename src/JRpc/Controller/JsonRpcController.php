@@ -4,7 +4,6 @@ namespace JRpc\Controller;
 
 use Zend\Mvc\Controller\AbstractActionController;
 use JRpc\Json\Server\Server;
-use Zend\Http\Response;
 
 class JsonRpcController extends AbstractActionController
 {
@@ -15,7 +14,7 @@ class JsonRpcController extends AbstractActionController
         $server->getRequest()->setVersion(Server::VERSION_2);
         $server->initializeClass();
 
-        $content = ('GET' == $this->getRequest()->getMethod()) ? $server->getServiceMap():$server->handle();
+        $content = ('GET' == $this->getRequest()->getMethod()) ? $server->getServiceMap() : $server->handle();
 
         return $this->getResponse()->setContent($content);
     }
