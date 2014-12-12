@@ -33,8 +33,8 @@ return array(
     'json-rpc-server' => array(
         'cache' => 'storage_memcached',
         'log' => 'log-system',
+    	'persistence' => false,
         'services' => array(
-            'wow_service_user',
         ),
     ),
 );

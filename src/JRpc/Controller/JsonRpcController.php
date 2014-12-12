@@ -4,23 +4,19 @@ namespace JRpc\Controller;
 
 use Zend\Mvc\Controller\AbstractActionController;
 use JRpc\Json\Server\Server;
+use Zend\Http\Response;
 
 class JsonRpcController extends AbstractActionController
 {
     public function handleAction()
     {
-        $sm = $this->getServiceLocator();
-
-        $config = $this->getServiceLocator()->get('config')['json-rpc-server'];
-        $cache = (isset($config['cache']) && is_string($config['cache'])) ? $sm->get($config['cache']) : null;
-
-        $server = $sm->get('json_server');
+        $server = $this->serviceLocator->get('json_server');
         $server->setReturnResponse(true);
         $server->getRequest()->setVersion(Server::VERSION_2);
-        $server->setPersistence(true);
-        $server->setCache($cache);
-        $server->setArrayClass($config['services']);
+        $server->initializeClass();
 
-        return $this->getResponse()->setContent($server->handle());
+        $content = ('GET' == $this->getRequest()->getMethod()) ? $server->getServiceMap():$server->handle();
+
+        return $this->getResponse()->setContent($content);
     }
 }
