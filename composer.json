@@ -1,0 +1,27 @@
+{
+  "name": "buse974/jrpc",
+  "description": "Json Rpc Server for ZF2",
+  "type": "library",
+  "homepage": "https://github.com/buse974/JRpc",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Christophe Robert",
+      "email": "christophe.robert@ti1.fr"
+    }
+  ],
+  "require": {
+    "php": ">=5.4",
+    "zendframework/zendframework": "2.*"
+  },
+  "require-dev" : {
+    "fabpot/php-cs-fixer":"*",
+    "phpunit/phpunit" : ">=4"
+  },
+  "autoload": {
+        "psr-0": { "JRpc": "src/" }
+  },
+  "config": {
+       "bin-dir": "bin/"
+  }
+}
