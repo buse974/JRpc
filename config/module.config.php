@@ -7,9 +7,9 @@ return array(
         ),
     ),
     'service_manager' =>  array(
-    	'invokables' => array(
-    		'json_server' => 'JRpc\Json\Server\Server'
-    	),
+        'invokables' => array(
+            'json_server' => 'JRpc\Json\Server\Server',
+        ),
     ),
     'router' => array(
         'routes' => array(

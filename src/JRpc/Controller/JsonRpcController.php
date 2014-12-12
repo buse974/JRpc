@@ -9,11 +9,11 @@ class JsonRpcController extends AbstractActionController
 {
     public function handleAction()
     {
-    	$sm = $this->getServiceLocator();
-    	
-    	$config = $this->getServiceLocator()->get('config')['json-rpc-server'];
-    	$cache = (isset($config['cache']) && is_string($config['cache'])) ? $sm->get($config['cache']) : null;
-    	
+        $sm = $this->getServiceLocator();
+
+        $config = $this->getServiceLocator()->get('config')['json-rpc-server'];
+        $cache = (isset($config['cache']) && is_string($config['cache'])) ? $sm->get($config['cache']) : null;
+
         $server = $sm->get('json_server');
         $server->setReturnResponse(true);
         $server->getRequest()->setVersion(Server::VERSION_2);

@@ -24,33 +24,34 @@ class Server extends BaseServer implements ServiceLocatorAwareInterface, EventMa
     protected $cache;
     protected $persistence = false;
 
-    public function setCache($cache) 
+    public function setCache($cache)
     {
-    	if ($cache instanceof StorageInterface) {
-    		$this->cache = $cache;
-    	}
-    	
-    	return $this; 
+        if ($cache instanceof StorageInterface) {
+            $this->cache = $cache;
+        }
+
+        return $this;
     }
-    
+
     protected function _handle()
     {
         try {
             $request = $this->getRequest();
             if ($request->isParseError()) {
-                 throw new ParseErrorException();
+                throw new ParseErrorException();
             }
-            $this->getEventManager()->trigger('sendRequest.pre',null,array('methode' => $request->getMethod()));
+            $this->getEventManager()->trigger('sendRequest.pre', null, array('methode' => $request->getMethod()));
             if (($ret = parent::_handle()) instanceof RPCERROR && ($ret = $ret->getData()) instanceof \Exception) {
                 throw $ret;
             }
         } catch (AbstractException $e) {
-                $sm = $this->getServiceLocator();
-                $sm->get($sm->get('Config')['json-rpc-server']['log'])->err('(' . $e->getCode() . ') ' . $e->getMessage());
+            $sm = $this->getServiceLocator();
+            $sm->get($sm->get('Config')['json-rpc-server']['log'])->err('('.$e->getCode().') '.$e->getMessage());
+
             return $this->fault($e->getMessage(), $e->getCode());
         } catch (\Exception $e) {
-                $sm = $this->getServiceLocator();
-                $sm->get($sm->get('Config')['json-rpc-server']['log'])->err('(' . $e->getCode() . ') ' . $e->getMessage() . ' in ' . $e->getFile() . ' line ' . $e->getLine(), $e->getTrace());
+            $sm = $this->getServiceLocator();
+            $sm->get($sm->get('Config')['json-rpc-server']['log'])->err('('.$e->getCode().') '.$e->getMessage().' in '.$e->getFile().' line '.$e->getLine(), $e->getTrace());
 
             return $this->fault('Internal error', RPCERROR::ERROR_INTERNAL);
         }
@@ -63,119 +64,121 @@ class Server extends BaseServer implements ServiceLocatorAwareInterface, EventMa
 
     public function setArrayClass(array $arrayClass)
     {
-    	if($this->persistence && $this->cache !== null
-    		&& ($definition = $this->cache->getItem('jrpc-definition'))!==null 
-    		&& ($serviceMap = $this->cache->getItem('jrpc-serviceMap'))!==null  
-    	) {
-    		$this->table = $definition;
-    		$this->serviceMap = $serviceMap;
-    		
-    		return;
-    	}
+        if ($this->persistence && $this->cache !== null
+            && ($definition = $this->cache->getItem('jrpc-definition')) !== null
+            && ($serviceMap = $this->cache->getItem('jrpc-serviceMap')) !== null
+        ) {
+            $this->table = $definition;
+            $this->serviceMap = $serviceMap;
 
-	    foreach ($arrayClass as $c) {
-	    	$this->setClass($c);
-	    }
-    	
-    	if ($this->persistence && $this->cache !== null) {
-    		$this->cache->setItem('jrpc-definition', $this->table);
-    		$this->cache->setItem('jrpc-serviceMap', $this->serviceMap);
-    	}
+            return;
+        }
+
+        foreach ($arrayClass as $c) {
+            $this->setClass($c);
+        }
+
+        if ($this->persistence && $this->cache !== null) {
+            $this->cache->setItem('jrpc-definition', $this->table);
+            $this->cache->setItem('jrpc-serviceMap', $this->serviceMap);
+        }
     }
-    
+
     public function setPersistence($mode)
     {
-    	$this->persistence = $mode;
-    	
-    	return $this;
+        $this->persistence = $mode;
+
+        return $this;
     }
-    
+
     /**
      * Register a class with the server
      *
      * @param  string $class
      * @param  string $namespace Ignored
-     * @param  mixed $argv Ignored
+     * @param  mixed  $argv      Ignored
      * @return Server
      */
     public function setClass($class, $namespace = '', $argv = null)
     {
-    	if (2 < func_num_args()) {
-    		$argv = func_get_args();
-    		$argv = array_slice($argv, 2);
-    	}
-    
-    	$obj = $class;
-    	if($this->serviceLocator->has($class)) {
-    		$obj = $this->getServiceLocator()->get($class);
-    	}
-    	
-    	$reflection = Reflection::reflectClass($obj, $argv, $namespace);
-    
-    	foreach ($reflection->getMethods() as $method) {
-    		$docComment = $method->getDocComment();
-    		if($docComment!==false) {
-	    		$scanner    = new DocBlockReflection($docComment);
-	    		if($scanner->hasTag('invokable')) {
-	    			$definition = $this->_buildSignature($method, $class);
-	    			$this->_addMethodServiceMap($definition);
-	    		}
-    		}
-    	}
-    	return $this;
+        if (2 < func_num_args()) {
+            $argv = func_get_args();
+            $argv = array_slice($argv, 2);
+        }
+
+        $obj = $class;
+        if ($this->serviceLocator->has($class)) {
+            $obj = $this->getServiceLocator()->get($class);
+        }
+
+        $reflection = Reflection::reflectClass($obj, $argv, $namespace);
+
+        foreach ($reflection->getMethods() as $method) {
+            $docComment = $method->getDocComment();
+            if ($docComment !== false) {
+                $scanner    = new DocBlockReflection($docComment);
+                if ($scanner->hasTag('invokable')) {
+                    $definition = $this->_buildSignature($method, $class);
+                    $this->_addMethodServiceMap($definition);
+                }
+            }
+        }
+
+        return $this;
     }
-    
+
     /**
      * Build a method signature
      *
      * @param  Reflection\AbstractFunction $reflection
-     * @param  null|string|object $class
+     * @param  null|string|object          $class
      * @return Method\Definition
-     * @throws Exception\RuntimeException on duplicate entry
+     * @throws Exception\RuntimeException  on duplicate entry
      */
     protected function _buildSignature(Reflection\AbstractFunction $reflection, $class = null)
     {
-    	$ns         = $reflection->getNamespace();
-    	$name       = $reflection->getName();
-    	$shortName  = $reflection->getDeclaringClass()->getShortName();
-    	$method     = empty($ns) ? strtolower($shortName) . '.' . $name : $ns . '.' . $name;
-    
-    	if (!$this->overwriteExistingMethods && $this->table->hasMethod($method)) {
-    		throw new Exception\RuntimeException('Duplicate method registered: ' . $method);
-    	}
-    
-    	$definition = new Method\Definition();
-    	$definition->setName($method)
-    	           ->setCallback($this->_buildCallback($reflection))
-    	           ->setMethodHelp($reflection->getDescription())
-    	           ->setInvokeArguments($reflection->getInvokeArguments());
-    
-    	foreach ($reflection->getPrototypes() as $proto) {
-    		$prototype = new Prototype();
-    		$prototype->setReturnType($this->_fixType($proto->getReturnType()));
-    		foreach ($proto->getParameters() as $parameter) {
-    			$param = new Parameter(array(
-    					'type'     => $this->_fixType($parameter->getType()),
-    					'name'     => $parameter->getName(),
-    					'optional' => $parameter->isOptional(),
-    			));
-    			if ($parameter->isDefaultValueAvailable()) {
-    				$param->setDefaultValue($parameter->getDefaultValue());
-    			}
-    			$prototype->addParameter($param);
-    		}
-    		$definition->addPrototype($prototype);
-    	}
-    	if (is_object($class)) {
-    		$definition->setObject($class);
-    	}elseif($this->getServiceLocator()->has($class)) {
-    		$definition->setNameSm($class);
-    	}
-    	
-    	$this->table->addMethod($definition);
-    	return $definition;
+        $ns         = $reflection->getNamespace();
+        $name       = $reflection->getName();
+        $shortName  = $reflection->getDeclaringClass()->getShortName();
+        $method     = empty($ns) ? strtolower($shortName).'.'.$name : $ns.'.'.$name;
+
+        if (!$this->overwriteExistingMethods && $this->table->hasMethod($method)) {
+            throw new Exception\RuntimeException('Duplicate method registered: '.$method);
+        }
+
+        $definition = new Method\Definition();
+        $definition->setName($method)
+                   ->setCallback($this->_buildCallback($reflection))
+                   ->setMethodHelp($reflection->getDescription())
+                   ->setInvokeArguments($reflection->getInvokeArguments());
+
+        foreach ($reflection->getPrototypes() as $proto) {
+            $prototype = new Prototype();
+            $prototype->setReturnType($this->_fixType($proto->getReturnType()));
+            foreach ($proto->getParameters() as $parameter) {
+                $param = new Parameter(array(
+                        'type'     => $this->_fixType($parameter->getType()),
+                        'name'     => $parameter->getName(),
+                        'optional' => $parameter->isOptional(),
+                ));
+                if ($parameter->isDefaultValueAvailable()) {
+                    $param->setDefaultValue($parameter->getDefaultValue());
+                }
+                $prototype->addParameter($param);
+            }
+            $definition->addPrototype($prototype);
+        }
+        if (is_object($class)) {
+            $definition->setObject($class);
+        } elseif ($this->getServiceLocator()->has($class)) {
+            $definition->setNameSm($class);
+        }
+
+        $this->table->addMethod($definition);
+
+        return $definition;
     }
-    
+
     /**
      * Set service locator
      *
