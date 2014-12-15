@@ -71,6 +71,8 @@ class Server extends BaseServer implements ServiceLocatorAwareInterface, EventMa
     /**
      *
      * (non-PHPdoc)
+     * 
+     * @codeCoverageIgnore
      * @see \Zend\Json\Server\Server::_handle()
      */
     protected function getParentHandle()
@@ -162,10 +164,12 @@ class Server extends BaseServer implements ServiceLocatorAwareInterface, EventMa
         $shortName  = $reflection->getDeclaringClass()->getShortName();
         $method     = empty($ns) ? strtolower($shortName).'.'.$name : $ns.'.'.$name;
 
+        // Ignore Because copy to parent::_buildSignature
+        // @codeCoverageIgnoreStart
         if (!$this->overwriteExistingMethods && $this->table->hasMethod($method)) {
             throw new Exception\RuntimeException('Duplicate method registered: '.$method);
         }
-
+        // @codeCoverageIgnoreEnd
         $definition = new Method\Definition();
         $definition->setName($method)
                    ->setCallback($this->_buildCallback($reflection))
@@ -181,15 +185,21 @@ class Server extends BaseServer implements ServiceLocatorAwareInterface, EventMa
                         'name'     => $parameter->getName(),
                         'optional' => $parameter->isOptional(),
                 ));
+                // Ignore Because copy to parent::_buildSignature
+                // @codeCoverageIgnoreStart
                 if ($parameter->isDefaultValueAvailable()) {
                     $param->setDefaultValue($parameter->getDefaultValue());
                 }
+                // @codeCoverageIgnoreEnd
                 $prototype->addParameter($param);
             }
             $definition->addPrototype($prototype);
         }
         if (is_object($class)) {
+        	// Ignore Because copy to parent::_buildSignature
+        	// @codeCoverageIgnoreStart
             $definition->setObject($class);
+            // @codeCoverageIgnoreEnd
         } elseif ($this->getServiceLocator()->has($class)) {
             $definition->setNameSm($class);
         }
