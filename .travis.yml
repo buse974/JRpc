@@ -6,4 +6,12 @@ php :
     - 5.4
 
 before_script :
+    - mkdir -p build/logs
     - composer install
+
+script:
+    - bin/phpunit -c ./ --coverage-text --coverage-clover ../build/logs/clover.xml
+
+after_script:
+    - php bin/coveralls
+
