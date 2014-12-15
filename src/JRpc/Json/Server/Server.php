@@ -16,26 +16,26 @@ use Zend\Code\Reflection\DocBlockReflection;
 
 class Server extends BaseServer implements ServiceLocatorAwareInterface, EventManagerAwareInterface
 {
-	/**
-	 * 
-	 * @var \Zend\ServiceManager\ServiceLocatorInterface
-	 */
-    protected $serviceLocator;
-    
     /**
-     * 
+     *
+     * @var \Zend\ServiceManager\ServiceLocatorInterface
+     */
+    protected $serviceLocator;
+
+    /**
+     *
      * @var \Zend\EventManager\EventManagerInterface
      */
     protected $events;
-    
+
     /**
-     * 
+     *
      * @var \Zend\Cache\Storage\StorageInterface|null
      */
     protected $cache;
-    
+
     /**
-     * 
+     *
      * @var bool|null
      */
     protected $persistence = null;
@@ -67,15 +67,15 @@ class Server extends BaseServer implements ServiceLocatorAwareInterface, EventMa
             return $this->fault('Internal error', RPCERROR::ERROR_INTERNAL);
         }
     }
-    
+
     /**
-     *  
+     *
      * (non-PHPdoc)
      * @see \Zend\Json\Server\Server::_handle()
      */
     protected function getParentHandle()
     {
-    	return parent::_handle();
+        return parent::_handle();
     }
 
     /**
@@ -88,7 +88,7 @@ class Server extends BaseServer implements ServiceLocatorAwareInterface, EventMa
     }
 
     /**
-     * Initialize all class 
+     * Initialize all class
      */
     public function initializeClass()
     {
@@ -98,12 +98,11 @@ class Server extends BaseServer implements ServiceLocatorAwareInterface, EventMa
             return;
         }
 
-        if ($this->getPersistence() 
+        if ($this->getPersistence()
             && $this->getCache() !== null
             && ($definition = $this->getCache()->getItem('jrpc-definition')) !== null
             && ($serviceMap = $this->getCache()->getItem('jrpc-serviceMap')) !== null
         ) {
-        	
             $this->table = $definition;
             $this->serviceMap = $serviceMap;
 
@@ -120,10 +119,10 @@ class Server extends BaseServer implements ServiceLocatorAwareInterface, EventMa
         }
     }
 
-	/**
-	 * (non-PHPdoc)
-	 * @see \Zend\Json\Server\Server::setClass()
-	 */
+    /**
+     * (non-PHPdoc)
+     * @see \Zend\Json\Server\Server::setClass()
+     */
     public function setClass($class, $namespace = '', $argv = null)
     {
         if (2 < func_num_args()) {
@@ -152,10 +151,10 @@ class Server extends BaseServer implements ServiceLocatorAwareInterface, EventMa
         return $this;
     }
 
-	/**
-	 * (non-PHPdoc)
-	 * @see \Zend\Server\AbstractServer::_buildSignature()
-	 */
+    /**
+     * (non-PHPdoc)
+     * @see \Zend\Server\AbstractServer::_buildSignature()
+     */
     protected function _buildSignature(Reflection\AbstractFunction $reflection, $class = null)
     {
         $ns         = $reflection->getNamespace();
@@ -202,48 +201,48 @@ class Server extends BaseServer implements ServiceLocatorAwareInterface, EventMa
 
     /**
      * (non-PHPdoc)
-     * 
+     *
      * @see \Zend\Json\Server\Server::setPersistence()
      */
     public function setPersistence($mode)
     {
-    	$this->persistence = $mode;
-    
-    	return $this;
+        $this->persistence = $mode;
+
+        return $this;
     }
-    
+
     /**
      * Check persistance
-     * 
+     *
      * @return bool
      */
     public function getPersistence()
     {
-    	if (null === $this->persistence) {
-    		$config = $this->getServiceLocator()->get('config')['json-rpc-server'];
-    		$this->persistence = (isset($config['persistence']) && $config['persistence'] == true) ? true : false;
-    	}
-    
-    	return $this->persistence;
+        if (null === $this->persistence) {
+            $config = $this->getServiceLocator()->get('config')['json-rpc-server'];
+            $this->persistence = (isset($config['persistence']) && $config['persistence'] == true) ? true : false;
+        }
+
+        return $this->persistence;
     }
-    
+
     /**
      * Get Storage if define in config
-     * 
+     *
      * @return \Zend\Cache\Storage\StorageInterface|null
      */
     public function getCache()
     {
-    	if (null === $this->cache) {
-    		$config = $this->getServiceLocator()->get('config')['json-rpc-server'];
-    		if (isset($config['cache']) && is_string($config['cache'])) {
-    			$this->cache = $this->getServiceLocator()->get($config['cache']);
-    		}
-    	}
-    
-    	return $this->cache;
+        if (null === $this->cache) {
+            $config = $this->getServiceLocator()->get('config')['json-rpc-server'];
+            if (isset($config['cache']) && is_string($config['cache'])) {
+                $this->cache = $this->getServiceLocator()->get($config['cache']);
+            }
+        }
+
+        return $this->cache;
     }
-    
+
     /**
      * Set service locator
      *
