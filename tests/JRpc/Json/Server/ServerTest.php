@@ -22,7 +22,6 @@ class ServerTest extends AbstractHttpControllerTestCase
 
     public function testHandleParseError()
     {
-    	// Mock service manager
     	// Mock Service Locator
     	$mock_sm = $this->getMockBuilder('Zend\ServiceManager\ServiceLocatorInterface')
     	                ->disableOriginalConstructor()
@@ -510,26 +509,5 @@ class ServerTest extends AbstractHttpControllerTestCase
     	
     	$this->assertInstanceOf('Zend\EventManager\EventManagerInterface', $out);
     	$this->assertEquals($out, $ref_events->getValue($server));
-    	
-    }
-    
-    public function testGetParentHandle()
-    {
-    	$server = $this->getMockBuilder('JRpc\Json\Server\Server')
-    	               ->setMethods(array('_handle'))
-    	               ->disableOriginalConstructor()
-    	               ->getMock();
-    	
-    	$server->expects($this->any())
-    	       ->method('_handle')
-    	       ->will($this->returnValue('ok'));
-    	
-    	$server->getParentHandle();
-    	
-    	$ref_server = new \ReflectionClass('JRpc\Json\Server\Server');
-    	$ref_getParentHandle = $ref_server->getMethod('getParentHandle');
-    	$ref_getParentHandle->setAccessible(true);
-    	
-    	$this->assertEquals('ok', $ref_getParentHandle->invoke($server));
     }
 }
