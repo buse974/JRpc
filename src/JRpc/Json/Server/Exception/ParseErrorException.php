@@ -2,7 +2,7 @@
 
 namespace JRpc\Json\Server\Exception;
 
-use JRpc\Json\Server\Error;
+use Zend\Json\Server\Error;
 
 class ParseErrorException extends AbstractException
 {
