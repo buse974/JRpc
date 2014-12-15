@@ -1,4 +1,5 @@
-JRpc
-====
+# Json RPC Server For ZF2
 
-JRpc
+[![Build Status](https://travis-ci.org/buse974/JRpc.svg)](https://travis-ci.org/buse974/JRpc)
+
+
