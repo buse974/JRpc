@@ -124,7 +124,9 @@ class ServerTest extends AbstractHttpControllerTestCase
 
         $mock_sm->expects($this->any())
                 ->method('err')
-                ->with('(1234) mock_exception in /home/buse974/Documents/buse974/studnet/apiwow/vendor/buse974/jrpc/tests/JRpc/Json/Server/ServerTest.php line 137');
+                ->with($this->callback(function ($out) {
+                	return (strpos($out, '(1234) mock_exception') === 0);
+                }));
 
         // mock data
         $m_data = $this->getMockBuilder('Zend\Json\Server\Error')
