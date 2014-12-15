@@ -2,15 +2,13 @@
 
 namespace JRpc\Json\Server;
 
-use Zend\ServiceManager\ServiceLocatorInterface;
 use Zend\Json\Server\Server as BaseServer;
 use Zend\EventManager\EventManagerAwareInterface;
-use Zend\EventManager\EventManagerInterface;
+use Zend\ServiceManager\ServiceLocatorAwareInterface;
 use Zend\EventManager\EventManager;
 use Zend\Json\Server\Error as RPCERROR;
 use JRpc\Json\Server\Exception\AbstractException;
 use JRpc\Json\Server\Exception\ParseErrorException;
-use Zend\ServiceManager\ServiceLocatorAwareInterface;
 use Zend\Server\Reflection;
 use Zend\Server\Method\Prototype;
 use Zend\Server\Method\Parameter;
@@ -18,20 +16,43 @@ use Zend\Code\Reflection\DocBlockReflection;
 
 class Server extends BaseServer implements ServiceLocatorAwareInterface, EventManagerAwareInterface
 {
+	/**
+	 * 
+	 * @var \Zend\ServiceManager\ServiceLocatorInterface
+	 */
     protected $serviceLocator;
+    
+    /**
+     * 
+     * @var \Zend\EventManager\EventManagerInterface
+     */
     protected $events;
+    
+    /**
+     * 
+     * @var \Zend\Cache\Storage\StorageInterface|null
+     */
     protected $cache;
+    
+    /**
+     * 
+     * @var bool|null
+     */
     protected $persistence = null;
 
+    /**
+     * (non-PHPdoc)
+     * @see \Zend\Json\Server\Server::_handle()
+     */
     protected function _handle()
     {
         try {
             $request = $this->getRequest();
-            if ($request->isParseError()) {
+            if ($request->isParseError() === true) {
                 throw new ParseErrorException();
             }
             $this->getEventManager()->trigger('sendRequest.pre', null, array('methode' => $request->getMethod()));
-            if (($ret = parent::_handle()) instanceof RPCERROR && ($ret = $ret->getData()) instanceof \Exception) {
+            if (($ret = $this->getParentHandle()) instanceof RPCERROR && ($ret = $ret->getData()) instanceof \Exception) {
                 throw $ret;
             }
         } catch (AbstractException $e) {
@@ -46,12 +67,29 @@ class Server extends BaseServer implements ServiceLocatorAwareInterface, EventMa
             return $this->fault('Internal error', RPCERROR::ERROR_INTERNAL);
         }
     }
+    
+    /**
+     *  
+     * (non-PHPdoc)
+     * @see \Zend\Json\Server\Server::_handle()
+     */
+    protected function getParentHandle()
+    {
+    	return parent::_handle();
+    }
 
+    /**
+     * (non-PHPdoc)
+     * @see \Zend\Server\AbstractServer::_dispatch()
+     */
     public function _dispatch(\Zend\Server\Method\Definition $invocable, array $params)
     {
         return call_user_func_array(array($this->getServiceLocator()->get($invocable->getNameSm()), $invocable->getCallback()->getMethod()), $params);
     }
 
+    /**
+     * Initialize all class 
+     */
     public function initializeClass()
     {
         $config = $this->getServiceLocator()->get('config')['json-rpc-server'];
@@ -60,10 +98,12 @@ class Server extends BaseServer implements ServiceLocatorAwareInterface, EventMa
             return;
         }
 
-        if ($this->getPersistence() && $this->getCache() !== null
-            && ($definition = $this->cache->getItem('jrpc-definition')) !== null
-            && ($serviceMap = $this->cache->getItem('jrpc-serviceMap')) !== null
+        if ($this->getPersistence() 
+            && $this->getCache() !== null
+            && ($definition = $this->getCache()->getItem('jrpc-definition')) !== null
+            && ($serviceMap = $this->getCache()->getItem('jrpc-serviceMap')) !== null
         ) {
+        	
             $this->table = $definition;
             $this->serviceMap = $serviceMap;
 
@@ -75,48 +115,15 @@ class Server extends BaseServer implements ServiceLocatorAwareInterface, EventMa
         }
 
         if ($this->getPersistence() && $this->getCache() !== null) {
-            $this->cache->setItem('jrpc-definition', $this->table);
-            $this->cache->setItem('jrpc-serviceMap', $this->serviceMap);
+            $this->getCache()->setItem('jrpc-definition', $this->table);
+            $this->getCache()->setItem('jrpc-serviceMap', $this->serviceMap);
         }
     }
 
-    public function setPersistence($mode)
-    {
-        $this->persistence = $mode;
-
-        return $this;
-    }
-
-    public function getPersistence()
-    {
-        if (null === $this->persistence) {
-            $config = $this->getServiceLocator()->get('config')['json-rpc-server'];
-            $this->persistence = (isset($config['persistence']) && $config['persistence'] == true) ? true : false;
-        }
-
-        return $this->persistence;
-    }
-
-    protected function getCache()
-    {
-        if (null === $this->cache) {
-            $config = $this->getServiceLocator()->get('config')['json-rpc-server'];
-            if (isset($config['cache']) && is_string($config['cache'])) {
-                $this->cache = $this->getServiceLocator()->get($config['cache']);
-            }
-        }
-
-        return $this->cache;
-    }
-
-    /**
-     * Register a class with the server
-     *
-     * @param  string $class
-     * @param  string $namespace Ignored
-     * @param  mixed  $argv      Ignored
-     * @return Server
-     */
+	/**
+	 * (non-PHPdoc)
+	 * @see \Zend\Json\Server\Server::setClass()
+	 */
     public function setClass($class, $namespace = '', $argv = null)
     {
         if (2 < func_num_args()) {
@@ -145,14 +152,10 @@ class Server extends BaseServer implements ServiceLocatorAwareInterface, EventMa
         return $this;
     }
 
-    /**
-     * Build a method signature
-     *
-     * @param  Reflection\AbstractFunction $reflection
-     * @param  null|string|object          $class
-     * @return Method\Definition
-     * @throws Exception\RuntimeException  on duplicate entry
-     */
+	/**
+	 * (non-PHPdoc)
+	 * @see \Zend\Server\AbstractServer::_buildSignature()
+	 */
     protected function _buildSignature(Reflection\AbstractFunction $reflection, $class = null)
     {
         $ns         = $reflection->getNamespace();
@@ -198,11 +201,55 @@ class Server extends BaseServer implements ServiceLocatorAwareInterface, EventMa
     }
 
     /**
+     * (non-PHPdoc)
+     * 
+     * @see \Zend\Json\Server\Server::setPersistence()
+     */
+    public function setPersistence($mode)
+    {
+    	$this->persistence = $mode;
+    
+    	return $this;
+    }
+    
+    /**
+     * Check persistance
+     * 
+     * @return bool
+     */
+    public function getPersistence()
+    {
+    	if (null === $this->persistence) {
+    		$config = $this->getServiceLocator()->get('config')['json-rpc-server'];
+    		$this->persistence = (isset($config['persistence']) && $config['persistence'] == true) ? true : false;
+    	}
+    
+    	return $this->persistence;
+    }
+    
+    /**
+     * Get Storage if define in config
+     * 
+     * @return \Zend\Cache\Storage\StorageInterface|null
+     */
+    public function getCache()
+    {
+    	if (null === $this->cache) {
+    		$config = $this->getServiceLocator()->get('config')['json-rpc-server'];
+    		if (isset($config['cache']) && is_string($config['cache'])) {
+    			$this->cache = $this->getServiceLocator()->get($config['cache']);
+    		}
+    	}
+    
+    	return $this->cache;
+    }
+    
+    /**
      * Set service locator
      *
-     * @param ServiceLocatorInterface $serviceLocator
+     * @param \Zend\ServiceManager\ServiceLocatorInterface $serviceLocator
      */
-    public function setServiceLocator(ServiceLocatorInterface $serviceLocator)
+    public function setServiceLocator(\Zend\ServiceManager\ServiceLocatorInterface $serviceLocator)
     {
         $this->serviceLocator = $serviceLocator;
 
@@ -212,7 +259,7 @@ class Server extends BaseServer implements ServiceLocatorAwareInterface, EventMa
     /**
      * Get service locator
      *
-     * @return ServiceLocatorInterface
+     * @return \Zend\ServiceManager\ServiceLocatorInterface
      */
     public function getServiceLocator()
     {
@@ -222,10 +269,10 @@ class Server extends BaseServer implements ServiceLocatorAwareInterface, EventMa
     /**
      * Inject an EventManager instance
      *
-     * @param  EventManagerInterface $eventManager
+     * @param  \Zend\EventManager\EventManagerInterface $eventManager
      * @return void
      */
-    public function setEventManager(EventManagerInterface $events)
+    public function setEventManager(\Zend\EventManager\EventManagerInterface $events)
     {
         $events->setIdentifiers(array(
                 __CLASS__,
@@ -238,7 +285,7 @@ class Server extends BaseServer implements ServiceLocatorAwareInterface, EventMa
 
     /**
      * (non-PHPdoc)
-     * @return EventManagerInterface
+     * @return \Zend\EventManager\EventManagerInterface
      */
     public function getEventManager()
     {
