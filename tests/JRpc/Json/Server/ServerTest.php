@@ -20,6 +20,103 @@ class ServerTest extends AbstractHttpControllerTestCase
         parent::setUp();
     }
 
+    public function testHandleParseError()
+    {
+    	// Mock service manager
+    	// Mock Service Locator
+    	$mock_sm = $this->getMockBuilder('Zend\ServiceManager\ServiceLocatorInterface')
+    	                ->disableOriginalConstructor()
+    	                ->setMethods(array('get', 'err', 'has'))
+    	                ->getMock();
+    	
+    	$mock_sm->expects($this->any())
+    	        ->method('get')
+    	        ->will($this->onConsecutiveCalls(array('json-rpc-server' => array('log' => 'log')), $this->returnSelf()));
+    	
+    	$mock_sm->expects($this->once())
+    	        ->method('err')
+    	        ->with('(-32700) Parse error');
+    	
+    	// Mock request
+    	$m_request = $this->getMockBuilder('request')
+    	                  ->setMethods(array('isParseError'))
+    	                  ->getMock();
+    	
+    	$m_request->expects($this->once())
+    	          ->method('isParseError')
+    	          ->will($this->returnValue(true));
+    	
+    	$server = $this->getMockBuilder('JRpc\Json\Server\Server')
+    	               ->setMethods(array('getParentHandle', 'fault', 'getEventManager', 'trigger', 'getRequest'))
+    	               ->disableOriginalConstructor()
+    	               ->getMock();
+    	
+    	$server->expects($this->once())
+    	       ->method('getRequest')
+    	       ->will($this->returnValue($m_request));
+    	
+    	$server->setServiceLocator($mock_sm);
+    	
+    	$ref_server = new \ReflectionClass('JRpc\Json\Server\Server');
+    	$ref_handle = $ref_server->getMethod('_handle');
+    	$ref_handle->setAccessible(true);
+    	$ref_handle->invoke($server);
+    	
+    }
+    
+    public function testHandleWhitoutException()
+    {
+    	// Mock request
+    	$m_request = $this->getMockBuilder('request')
+    	                  ->setMethods(array('isParseError', 'getMethod'))
+    	                  ->getMock();
+    
+    	$m_request->expects($this->once())
+    	          ->method('isParseError')
+    	          ->will($this->returnValue(false));
+    
+    	$m_request->expects($this->once())
+    	          ->method('getMethod')
+    	          ->will($this->returnValue('un_methode'));
+    
+    	// mock data
+    	$m_data = $this->getMockBuilder('Zend\Json\Server\Error')
+    	->disableOriginalConstructor()
+    	->setMethods(array('getData'))
+    	->getMock();
+    
+    	$m_data->expects($this->once())
+    	->method('getData')
+    	->will($this->returnValue('return'));
+    
+    	/////////////////////
+    	$server = $this->getMockBuilder('JRpc\Json\Server\Server')
+    	               ->setMethods(array('getParentHandle', 'fault', 'getEventManager', 'trigger', 'getRequest'))
+    	               ->disableOriginalConstructor()
+    	               ->getMock();
+
+    	$server->expects($this->once())
+    	       ->method('getRequest')
+    	       ->will($this->returnValue($m_request));
+    
+    	$server->expects($this->once())
+    	       ->method('getEventManager')
+    	       ->will($this->returnSelf());
+    
+    	$server->expects($this->once())
+    	       ->method('trigger')
+    	       ->with('sendRequest.pre', null, array('methode' => 'un_methode'));
+    
+    	$server->expects($this->once())
+    	       ->method('getParentHandle')
+    	       ->will($this->returnValue($m_data));
+
+    	$ref_server = new \ReflectionClass('JRpc\Json\Server\Server');
+    	$ref_handle = $ref_server->getMethod('_handle');
+    	$ref_handle->setAccessible(true);
+    	$ref_handle->invoke($server);
+    }
+    
     public function testHandleWhitAbstractException()
     {
         // Mock request
@@ -229,6 +326,24 @@ class ServerTest extends AbstractHttpControllerTestCase
 
         $server->initializeClass();
     }
+    
+    public function testInitializeClassNoConfig()
+    {
+    	$server = new Server();
+    	
+    	$mock_sm = $this->getMockBuilder('Zend\ServiceManager\ServiceLocatorInterface')
+    	                ->disableOriginalConstructor()
+    	                ->setMethods(array('get', 'has'))
+    	                ->getMock();
+    
+    	$mock_sm->expects($this->once())
+    			->method('get')
+    	        ->with('config')
+    	        ->will($this->returnValue(array('json-rpc-server' => array('services' => null))));
+    	
+    	$server->setServiceLocator($mock_sm);
+    	$server->initializeClass();
+    }
 
     public function testInitializeClassByCache()
     {
@@ -304,9 +419,21 @@ class ServerTest extends AbstractHttpControllerTestCase
              ->will($this->returnValue($def));
 
         $serv->setServiceLocator($mock_sm);
-        $serv->setClass('maclasse_sm', 'ns');
+        $serv->setClass('maclasse_sm', 'ns', array());
     }
 
+    public function testSetPersistence()
+	{
+		$server = new Server();
+		$server->setPersistence(true);
+		
+		$ref_server = new \ReflectionClass('JRpc\Json\Server\Server');
+		$ref_persistence = $ref_server->getProperty('persistence');
+		$ref_persistence->setAccessible(true);
+		
+		$this->assertEquals(true, $ref_persistence->getValue($server));
+	}
+	    
     public function testBuildSignature()
     {
         $sm = $this->getApplicationServiceLocator();
@@ -348,5 +475,61 @@ class ServerTest extends AbstractHttpControllerTestCase
         $out = $server->getCache();
 
         $this->assertEquals('cache', $out);
+    }
+    
+    public function testSetEventManager()
+    {
+    	$m_EventManagerInterface = $this->getMockBuilder('Zend\EventManager\EventManagerInterface')
+    	                                ->setMethods(array())
+    	                                ->getMock();
+    	
+    	$m_EventManagerInterface->expects($this->once())
+    	                        ->method('setIdentifiers')
+    	                        ->with(array('JRpc\Json\Server\Server','JRpc\Json\Server\Server'))
+    	                        ->will($this->returnSelf());
+    	
+    	$server = new Server();
+
+    	$ref_server = new \ReflectionClass('JRpc\Json\Server\Server');
+    	$ref_events = $ref_server->getProperty('events');
+    	$ref_events->setAccessible(true);
+    	
+    	$this->assertInstanceOf('JRpc\Json\Server\Server', $server->setEventManager($m_EventManagerInterface));
+    	$this->assertEquals($m_EventManagerInterface, $ref_events->getValue($server));
+    }
+    
+    public function testGetEventManagerByDefault()
+    {
+    	$server = new Server();
+    	
+    	$ref_server = new \ReflectionClass('JRpc\Json\Server\Server');
+    	$ref_events = $ref_server->getProperty('events');
+    	$ref_events->setAccessible(true);
+    	 
+    	$out = $server->getEventManager();
+    	
+    	$this->assertInstanceOf('Zend\EventManager\EventManagerInterface', $out);
+    	$this->assertEquals($out, $ref_events->getValue($server));
+    	
+    }
+    
+    public function testGetParentHandle()
+    {
+    	$server = $this->getMockBuilder('JRpc\Json\Server\Server')
+    	               ->setMethods(array('_handle'))
+    	               ->disableOriginalConstructor()
+    	               ->getMock();
+    	
+    	$server->expects($this->any())
+    	       ->method('_handle')
+    	       ->will($this->returnValue('ok'));
+    	
+    	$server->getParentHandle();
+    	
+    	$ref_server = new \ReflectionClass('JRpc\Json\Server\Server');
+    	$ref_getParentHandle = $ref_server->getMethod('getParentHandle');
+    	$ref_getParentHandle->setAccessible(true);
+    	
+    	$this->assertEquals('ok', $ref_getParentHandle->invoke($server));
     }
 }
