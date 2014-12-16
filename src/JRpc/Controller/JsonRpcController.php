@@ -13,9 +13,11 @@ class JsonRpcController extends AbstractActionController
         $server->setReturnResponse(true);
         $server->getRequest()->setVersion(Server::VERSION_2);
         $server->initializeClass();
+        
+        $content = ('GET' === $this->getRequest()->getMethod()) ? $server->getServiceMap() : $server->handle();
 
-        $content = ('GET' == $this->getRequest()->getMethod()) ? $server->getServiceMap() : $server->handle();
-
+        $this->getResponse()->getHeaders()->addHeaderLine('Content-Type', 'application/json');
+        
         return $this->getResponse()->setContent($content);
     }
 }
