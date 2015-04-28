@@ -51,7 +51,7 @@ class Server extends BaseServer implements ServiceLocatorAwareInterface, EventMa
             if ($request->isParseError() === true) {
                 throw new ParseErrorException();
             }
-            $this->getEventManager()->trigger('sendRequest.pre', null, array('methode' => $request->getMethod()));
+            $this->getEventManager()->trigger('sendRequest.pre', $this, array('methode' => $request->getMethod()));
             if (($ret = $this->getParentHandle()) instanceof RPCERROR && ($ret = $ret->getData()) instanceof \Exception) {
                 throw $ret;
             }
@@ -64,7 +64,7 @@ class Server extends BaseServer implements ServiceLocatorAwareInterface, EventMa
             $sm = $this->getServiceLocator();
             $sm->get($sm->get('Config')['json-rpc-server']['log'])->err('('.$e->getCode().') '.$e->getMessage().' in '.$e->getFile().' line '.$e->getLine(), $e->getTrace());
 
-            return $this->fault('Internal error', RPCERROR::ERROR_INTERNAL);
+            return $this->fault('Internal error', RPCERROR::ERROR_INTERNAL, $e->getTrace());
         }
     }
 
