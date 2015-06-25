@@ -9,6 +9,10 @@ class JsonRpcController extends AbstractActionController
 {
     public function handleAction()
     {
+    	if('OPTION' === $this->getRequest()->getMethod()) {
+    		return $this->getResponse();
+    	}
+    	
     	$jrpcconfig = $this->getServiceLocator()->get('config')['json-rpc-server'];
         $server = $this->serviceLocator->get('json_server');
         $server->setReturnResponse(true);
