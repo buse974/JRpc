@@ -9,7 +9,7 @@ class JsonRpcController extends AbstractActionController
 {
     public function handleAction()
     {
-    	if('OPTION' === $this->getRequest()->getMethod()) {
+    	if('OPTIONS' === $this->getRequest()->getMethod()) {
     		return $this->getResponse();
     	}
     	
