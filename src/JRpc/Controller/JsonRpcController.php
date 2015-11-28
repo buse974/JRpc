@@ -9,6 +9,15 @@ class JsonRpcController extends AbstractActionController
 {
     public function handleAction()
     {
+        $headers = $this->getResponse()->getHeaders();
+        
+        $headers->addHeaderLine('Content-Type', 'application/json');
+        if(isset($jrpcconfig['headers'])) {
+            foreach ($jrpcconfig['headers'] as $key => $value) {
+                $headers->addHeaderLine($key, $value);
+            }
+        }
+        
     	if('OPTIONS' === $this->getRequest()->getMethod()) {
     		return $this->getResponse();
     	}
@@ -20,15 +29,6 @@ class JsonRpcController extends AbstractActionController
         $server->initializeClass();
         
         $content = ('GET' === $this->getRequest()->getMethod()) ? $server->getServiceMap() : $server->handle();
-
-        $headers = $this->getResponse()->getHeaders();
-      
-        $headers->addHeaderLine('Content-Type', 'application/json');
-        if(isset($jrpcconfig['headers'])) {
-        	foreach ($jrpcconfig['headers'] as $key => $value) {
-        		$headers->addHeaderLine($key, $value);
-        	}
-        }
 
         return $this->getResponse()->setContent($content);
     }
