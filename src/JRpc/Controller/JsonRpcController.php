@@ -12,6 +12,8 @@ class JsonRpcController extends AbstractActionController
         $headers = $this->getResponse()->getHeaders();
         
         $headers->addHeaderLine('Content-Type', 'application/json');
+    	
+	$jrpcconfig = $this->getServiceLocator()->get('config')['json-rpc-server'];
         if(isset($jrpcconfig['headers'])) {
             foreach ($jrpcconfig['headers'] as $key => $value) {
                 $headers->addHeaderLine($key, $value);
@@ -22,7 +24,6 @@ class JsonRpcController extends AbstractActionController
     		return $this->getResponse();
     	}
     	
-    	$jrpcconfig = $this->getServiceLocator()->get('config')['json-rpc-server'];
         $server = $this->serviceLocator->get('json_server');
         $server->setReturnResponse(true);
         $server->getRequest()->setVersion(Server::VERSION_2);
