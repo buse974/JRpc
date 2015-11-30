@@ -5,7 +5,7 @@
  */
 
 return array(
-    'service_manager' =>  array(
+    'service_manager' => array(
         'services' => array(
             'storage' => 'cache',
         ),
@@ -16,6 +16,9 @@ return array(
         'persistence' => true,
         'services' => array(
             'un_service',
+        ),
+        'headers' => array(
+            'head' => 'value',
         ),
     ),
 );

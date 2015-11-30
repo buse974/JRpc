@@ -12,7 +12,7 @@ class Definition extends BaseDefinition
     protected $nameSm;
 
     /**
-     * Set stirng sm
+     * Set stirng sm.
      *
      * @param string $nameSm
      *
@@ -26,7 +26,7 @@ class Definition extends BaseDefinition
     }
 
     /**
-     * Get sm string
+     * Get sm string.
      *
      * @return null|string
      */
@@ -36,7 +36,7 @@ class Definition extends BaseDefinition
     }
 
     /**
-     * Serialize to array
+     * Serialize to array.
      *
      * @return array
      */

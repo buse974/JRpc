@@ -20,7 +20,7 @@
     "phpunit/phpunit" : ">=4"
   },
   "autoload": {
-        "psr-0": { "JRpc": "src/" }
+        "psr-4": { "JRpc\\": "src/" }
   },
   "config": {
        "bin-dir": "bin/"

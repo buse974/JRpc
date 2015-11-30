@@ -6,7 +6,7 @@ return array(
                 'ViewJsonStrategy',
         ),
     ),
-    'service_manager' =>  array(
+    'service_manager' => array(
         'invokables' => array(
             'json_server' => 'JRpc\Json\Server\Server',
         ),
@@ -16,10 +16,10 @@ return array(
             'api.json-rpc' => array(
                 'type' => 'literal',
                 'options' => array(
-                    'route'    => '/api.json-rpc',
+                    'route' => '/api.json-rpc',
                     'defaults' => array(
                         'controller' => 'json_rpc',
-                        'action'     => 'handle',
+                        'action' => 'handle',
                     ),
                 ),
             ),

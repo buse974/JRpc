@@ -9,7 +9,7 @@ error_reporting(E_ALL | E_STRICT);
 chdir(__DIR__);
 
 /**
- * Test bootstrap, for setting up autoloading
+ * Test bootstrap, for setting up autoloading.
  */
 class bootstrap
 {
@@ -19,7 +19,7 @@ class bootstrap
     {
         session_start();
         $_SERVER['REMOTE_ADDR'] = '127.0.0.1';
-        ini_set('date.timezone', "Europe/Paris");
+        ini_set('date.timezone', 'Europe/Paris');
         static::initAutoloader();
     }
 
@@ -33,14 +33,9 @@ class bootstrap
 
     protected static function initAutoloader()
     {
-        $vendorPath = static::findParentPath('vendor');
-        $zf2Path = $vendorPath.'/zendframework/zendframework/library/';
-
-        include $zf2Path.'/Zend/Loader/AutoloaderFactory.php';
         \Zend\Loader\AutoloaderFactory::factory(array(
             'Zend\Loader\StandardAutoloader' => array(
                 'autoregister_zf' => true,
-                'namespaces' => array('Mock' => __DIR__.'/Mock'),
             ),
         ));
 
