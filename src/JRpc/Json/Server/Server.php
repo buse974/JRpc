@@ -13,6 +13,8 @@ use Zend\Server\Reflection;
 use Zend\Server\Method\Prototype;
 use Zend\Server\Method\Parameter;
 use Zend\Code\Reflection\DocBlockReflection;
+use Zend\Json;
+use Zend\Json\Server\Request;
 
 class Server extends BaseServer implements ServiceLocatorAwareInterface, EventManagerAwareInterface
 {
@@ -117,6 +119,41 @@ class Server extends BaseServer implements ServiceLocatorAwareInterface, EventMa
         }
     }
 
+    public function multiHandle()
+    {
+        $input = $this->readInput();
+        $post = Json\Json::decode($input, Json\Json::TYPE_ARRAY);
+        
+        $content = null;
+        if(strpos($input, '[') === 0) {
+            $content = new ResponseSet();
+            foreach ($post as $p) {
+                $this->request = null;
+                $this->response = null;
+                $request = new Request();
+                $request->setOptions($p);
+                $request->setVersion(Server::VERSION_2);
+                $this->setRequest($request);
+                
+                $content->append($this->handle());
+            }
+        } else {
+            $request = new Request();
+            $request->setOptions($post);
+            $request->setVersion(Server::VERSION_2);
+            $this->setRequest($request);
+            
+            $content =  $this->handle();
+        }
+    
+        return $content;
+    }
+    
+    public function readInput()
+    {
+        return file_get_contents('php://input');
+    }
+    
     /**
      * (non-PHPdoc).
      *

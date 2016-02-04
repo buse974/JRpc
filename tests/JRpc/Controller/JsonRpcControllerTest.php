@@ -15,7 +15,7 @@ class JsonRpcControllerTest extends AbstractHttpControllerTestCase
     public function testHandleActionPost()
     {
         $mock_server = $this->getMockBuilder('JRpc\Json\Server\Server')
-            ->setMethods(array('setReturnResponse', 'initializeClass', 'getServiceMap', 'handle'))
+            ->setMethods(array('setReturnResponse', 'initializeClass', 'getServiceMap', 'multiHandle'))
             ->getMock();
 
         $mock_server->expects($this->once())
@@ -30,8 +30,8 @@ class JsonRpcControllerTest extends AbstractHttpControllerTestCase
             ->will($this->returnValue(array('getServiceMap')));
 
         $mock_server->expects($this->once())
-            ->method('handle')
-            ->will($this->returnValue(array('handle')));
+            ->method('multiHandle')
+            ->will($this->returnValue(array('multiHandle')));
 
         $sm = $this->getApplicationServiceLocator()->setAllowOverride(true);
         $sm->setService('json_server', $mock_server);
@@ -42,7 +42,7 @@ class JsonRpcControllerTest extends AbstractHttpControllerTestCase
         $this->assertActionName('handle');
         $this->assertResponseStatusCode(200);
 
-        $this->assertEquals('handle', current($this->getResponse()
+        $this->assertEquals('multiHandle', current($this->getResponse()
             ->getContent()));
     }
 
