@@ -123,37 +123,37 @@ class Server extends BaseServer implements ServiceLocatorAwareInterface, EventMa
     {
         $input = $this->readInput();
         $post = Json\Json::decode($input, Json\Json::TYPE_ARRAY);
-        
+
         $content = null;
-        if(strpos($input, '[') === 0) {
+        if (strpos($input, '[') === 0) {
             $content = new ResponseSet();
             foreach ($post as $p) {
                 $this->request = null;
                 $this->response = null;
                 $request = new Request();
                 $request->setOptions($p);
-                $request->setVersion(Server::VERSION_2);
+                $request->setVersion(self::VERSION_2);
                 $this->setRequest($request);
-                
+
                 $content->append($this->handle());
             }
         } else {
             $request = new Request();
             $request->setOptions($post);
-            $request->setVersion(Server::VERSION_2);
+            $request->setVersion(self::VERSION_2);
             $this->setRequest($request);
-            
-            $content =  $this->handle();
+
+            $content = $this->handle();
         }
-    
+
         return $content;
     }
-    
+
     public function readInput()
     {
         return file_get_contents('php://input');
     }
-    
+
     /**
      * (non-PHPdoc).
      *

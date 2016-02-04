@@ -217,7 +217,7 @@ class ServerTest extends AbstractHttpControllerTestCase
         $mock_sm->expects($this->any())
             ->method('err')
             ->with($this->callback(function ($out) {
-            return (strpos($out, '(1234) mock_exception') === 0);
+            return strpos($out, '(1234) mock_exception') === 0;
         }));
 
         // mock data
@@ -356,7 +356,7 @@ class ServerTest extends AbstractHttpControllerTestCase
         $m_cache->expects($this->exactly(2))
             ->method('getItem')
             ->with($this->callback(function ($param) {
-            return ($param === 'jrpc-definition' || $param === 'jrpc-serviceMap');
+            return $param === 'jrpc-definition' || $param === 'jrpc-serviceMap';
         }))
             ->will($this->onConsecutiveCalls('definition', 'serviceMap'));
 
@@ -409,7 +409,7 @@ class ServerTest extends AbstractHttpControllerTestCase
         $serv->expects($this->any())
             ->method('_buildSignature')
             ->with($this->callback(function ($arg) {
-            return ($arg->getName() === 'uneMethode');
+            return $arg->getName() === 'uneMethode';
         }), 'maclasse_sm')
             ->will($this->returnValue($def));
 
@@ -450,7 +450,7 @@ class ServerTest extends AbstractHttpControllerTestCase
         $serv->expects($this->any())
             ->method('_buildSignature')
             ->with($this->callback(function ($arg) {
-            return ($arg->getName() === 'uneMethode');
+            return $arg->getName() === 'uneMethode';
         }), 'maclasse_sm')
             ->will($this->returnValue($def));
 
