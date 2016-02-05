@@ -125,7 +125,7 @@ class Server extends BaseServer implements ServiceLocatorAwareInterface, EventMa
         $post = Json\Json::decode($input, Json\Json::TYPE_ARRAY);
 
         $content = null;
-        if (strpos($input, '[') === 0) {
+        if ($input[0]==='[') {
             $content = new ResponseSet();
             foreach ($post as $p) {
                 $this->request = null;

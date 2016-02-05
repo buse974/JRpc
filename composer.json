@@ -15,7 +15,7 @@
     "zendframework/zendframework": "2.*"
   },
   "require-dev" : {
-    "satooshi/php-coveralls": "dev-master",
+    "satooshi/php-coveralls": "1.0.0",
     "fabpot/php-cs-fixer":"*",
     "phpunit/phpunit" : ">=4"
   },
