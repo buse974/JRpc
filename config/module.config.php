@@ -34,6 +34,7 @@ return array(
         'cache' => 'storage_memcached',
         'log' => 'log-system',
         'persistence' => false,
+        'environment' => 'prod', /* dev|prod */
         'services' => array(
         ),
     ),
