@@ -9,6 +9,7 @@ class JsonRpcController extends AbstractActionController
 {
     public function handleAction()
     {
+        $headers = $this->getResponse()->getHeaders();
         $method = $this->getRequest()->getMethod();
         $jrpcconfig = $this->getServiceLocator()->get('config')['json-rpc-server'];
         if (isset($jrpcconfig['headers'])) {
@@ -21,10 +22,7 @@ class JsonRpcController extends AbstractActionController
             $server = $this->serviceLocator->get('json_server');
             $server->setReturnResponse(true);
             $server->initializeClass();
-            
-            $headers = $this->getResponse()->getHeaders();
             $headers->addHeaderLine('Content-Type', 'application/json');
-            
             $content = ('POST' === $method) ? $server->multiHandle() : $server->getServiceMap();
         } else {
             $content = "";
