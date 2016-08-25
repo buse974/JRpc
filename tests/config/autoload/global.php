@@ -14,6 +14,7 @@ return array(
         'cache' => 'storage',
         'log' => 'log-system',
         'persistence' => true,
+        'environment' => 'dev', /* dev|prod */
         'services' => array(
             'un_service',
         ),

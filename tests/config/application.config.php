@@ -3,6 +3,7 @@
 return array(
     'modules' => array(
         'JRpc',
+        'Zend\Router'
     ),
     'module_listener_options' => array(
         'module_paths' => array(

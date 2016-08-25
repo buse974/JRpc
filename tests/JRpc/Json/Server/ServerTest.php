@@ -2,12 +2,12 @@
 
 namespace JRpcTest\Json\Server;
 
-use JRpc\Json\Server\Server;
-use Zend\Test\PHPUnit\Controller\AbstractHttpControllerTestCase;
-use Zend\Server\Reflection\ReflectionMethod;
-use Zend\Server\Reflection\ReflectionClass;
 use JRpc\Json\Server\Method\Definition;
+use JRpc\Json\Server\Server;
 use Zend\Server\Method\Callback;
+use Zend\Server\Reflection\ReflectionClass;
+use Zend\Server\Reflection\ReflectionMethod;
+use Zend\Test\PHPUnit\Controller\AbstractHttpControllerTestCase;
 
 class ServerTest extends AbstractHttpControllerTestCase
 {
@@ -17,10 +17,14 @@ class ServerTest extends AbstractHttpControllerTestCase
         parent::setUp();
     }
 
+    /**
+     * @TODO has cheched
+     */
     public function testHandleParseError()
     {
+        
         // Mock Service Locator
-        $mock_sm = $this->getMockBuilder('Zend\ServiceManager\ServiceLocatorInterface')
+        $mock_sm = $this->getMockBuilder('Interop\Container\ContainerInterface')
             ->disableOriginalConstructor()
             ->setMethods(array('get', 'err', 'has'))
             ->getMock();
@@ -29,12 +33,8 @@ class ServerTest extends AbstractHttpControllerTestCase
             ->method('get')
             ->will($this->onConsecutiveCalls(array('json-rpc-server' => array('log' => 'log')), $this->returnSelf()));
 
-        $mock_sm->expects($this->once())
-            ->method('err')
-            ->with('(-32700) Parse error');
-
         // Mock request
-        $m_request = $this->getMockBuilder('request')
+        $m_request = $this->getMockBuilder('Zend\Http\Request')
             ->setMethods(array('isParseError'))
             ->getMock();
 
@@ -43,26 +43,24 @@ class ServerTest extends AbstractHttpControllerTestCase
             ->will($this->returnValue(true));
 
         $server = $this->getMockBuilder('JRpc\Json\Server\Server')
-            ->setMethods(array('getParentHandle', 'fault', 'getEventManager', 'trigger', 'getRequest'))
-            ->disableOriginalConstructor()
+            ->setMethods(['getParentHandle', 'fault', 'getEventManager', 'trigger', 'getRequest'])
+            ->setConstructorArgs([$mock_sm,[]])
             ->getMock();
 
         $server->expects($this->once())
             ->method('getRequest')
             ->will($this->returnValue($m_request));
 
-        $server->setServiceLocator($mock_sm);
-
         $ref_server = new \ReflectionClass('JRpc\Json\Server\Server');
         $ref_handle = $ref_server->getMethod('_handle');
         $ref_handle->setAccessible(true);
-        $ref_handle->invoke($server);
+        $res = $ref_handle->invoke($server);
     }
 
     public function testHandleWhitoutException()
     {
         // Mock request
-        $m_request = $this->getMockBuilder('request')
+        $m_request = $this->getMockBuilder('Zend\Http\Request')
             ->setMethods(array('isParseError', 'getMethod'))
             ->getMock();
 
@@ -115,7 +113,7 @@ class ServerTest extends AbstractHttpControllerTestCase
     public function testHandleWhitAbstractException()
     {
         // Mock request
-        $m_request = $this->getMockBuilder('request')
+        $m_request = $this->getMockBuilder('Zend\Http\Request')
             ->setMethods(array('isParseError', 'getMethod'))
             ->getMock();
 
@@ -131,8 +129,8 @@ class ServerTest extends AbstractHttpControllerTestCase
         $mock_exception = $this->getMockBuilder('JRpc\Json\Server\Exception\AbstractException')
             ->setConstructorArgs(array('message AbstractException', 2345))
             ->getMock();
-        // Mock Service Locator
-        $mock_sm = $this->getMockBuilder('Zend\ServiceManager\ServiceLocatorInterface')
+        // Mock Service Locator 
+        $mock_sm = $this->getMockBuilder('Interop\Container\ContainerInterface')
             ->disableOriginalConstructor()
             ->setMethods(array('get', 'err', 'has'))
             ->getMock();
@@ -158,10 +156,8 @@ class ServerTest extends AbstractHttpControllerTestCase
         // ///////////////////
         $server = $this->getMockBuilder('JRpc\Json\Server\Server')
             ->setMethods(array('getParentHandle', 'fault', 'getEventManager', 'trigger', 'getRequest'))
-            ->disableOriginalConstructor()
+            ->setConstructorArgs([$mock_sm, []])
             ->getMock();
-
-        $server->setServiceLocator($mock_sm);
 
         $server->expects($this->once())
             ->method('getRequest')
@@ -192,7 +188,7 @@ class ServerTest extends AbstractHttpControllerTestCase
     public function testHandle()
     {
         // Mock request
-        $m_request = $this->getMockBuilder('request')
+        $m_request = $this->getMockBuilder('Zend\Http\Request')
             ->setMethods(array('isParseError', 'getMethod'))
             ->getMock();
 
@@ -205,7 +201,7 @@ class ServerTest extends AbstractHttpControllerTestCase
             ->will($this->returnValue('un_methode'));
 
         // Mock Service Locator
-        $mock_sm = $this->getMockBuilder('Zend\ServiceManager\ServiceLocatorInterface')
+        $mock_sm = $this->getMockBuilder('Interop\Container\ContainerInterface')
             ->disableOriginalConstructor()
             ->setMethods(array('get', 'err', 'has'))
             ->getMock();
@@ -233,10 +229,8 @@ class ServerTest extends AbstractHttpControllerTestCase
         // ///////////////////
         $server = $this->getMockBuilder('JRpc\Json\Server\Server')
             ->setMethods(array('getParentHandle', 'fault', 'getEventManager', 'trigger', 'getRequest'))
-            ->disableOriginalConstructor()
+            ->setConstructorArgs([$mock_sm, []])
             ->getMock();
-
-        $server->setServiceLocator($mock_sm);
 
         $server->expects($this->once())
             ->method('getRequest')
@@ -266,9 +260,9 @@ class ServerTest extends AbstractHttpControllerTestCase
 
     public function testDispatch()
     {
-        $mock = $this->getMock('Mock', ['uneMethode']);
+        $mock = $this->getMockBuilder('stdClass')->setMethods(['uneMethode'])->getMock();
 
-        $mock_sm = $this->getMockBuilder('Zend\ServiceManager\ServiceLocatorInterface')
+        $mock_sm = $this->getMockBuilder('Interop\Container\ContainerInterface')
             ->disableOriginalConstructor()
             ->setMethods(array('get', 'has'))
             ->getMock();
@@ -282,8 +276,7 @@ class ServerTest extends AbstractHttpControllerTestCase
         $definition->setNameSm('maclasse_sm');
         $definition->setCallback((new Callback())->setMethod('uneMethode'));
 
-        $server = new Server();
-        $server->setServiceLocator($mock_sm);
+        $server = new Server($mock_sm, []);
 
         $out = $server->_dispatch($definition, array());
 
@@ -293,13 +286,12 @@ class ServerTest extends AbstractHttpControllerTestCase
     public function testInitializeClass()
     {
         $server = $this->getMockBuilder('JRpc\Json\Server\Server')
-            ->setMethods(array('getCache', 'setClass'))
-            ->disableOriginalConstructor()
+            ->setMethods(array('getCache', 'setClass', 'getPersistence'))
+            ->setConstructorArgs([$this->getApplicationServiceLocator(), ['services' => ['un_service' => 'un_service']]])
             ->getMock();
 
-        $server->setServiceLocator($this->getApplicationServiceLocator());
-
-        $m_cache = $this->getMockBuilder('cache')
+            
+        $m_cache = $this->getMockBuilder('stdClass')
             ->setMethods(array('getItem', 'setItem'))
             ->getMock();
 
@@ -314,42 +306,28 @@ class ServerTest extends AbstractHttpControllerTestCase
         $server->expects($this->any())
             ->method('getCache')
             ->will($this->returnValue($m_cache));
+        
+        $server->expects($this->any())
+            ->method('getPersistence')
+            ->will($this->returnValue(true));
 
         $server->expects($this->once())
             ->method('setClass')
             ->with('un_service');
-
-        $server->initializeClass();
-    }
-
-    public function testInitializeClassNoConfig()
-    {
-        $server = new Server();
-
-        $mock_sm = $this->getMockBuilder('Zend\ServiceManager\ServiceLocatorInterface')
-            ->disableOriginalConstructor()
-            ->setMethods(array('get', 'has'))
-            ->getMock();
-
-        $mock_sm->expects($this->once())
-            ->method('get')
-            ->with('config')
-            ->will($this->returnValue(array('json-rpc-server' => array('services' => null))));
-
-        $server->setServiceLocator($mock_sm);
+        
         $server->initializeClass();
     }
 
     public function testInitializeClassByCache()
     {
+        $container = $this->getApplicationServiceLocator();
+
         $server = $this->getMockBuilder('JRpc\Json\Server\Server')
             ->setMethods(array('getCache'))
-            ->disableOriginalConstructor()
+            ->setConstructorArgs([$container,$container->get('Config')['json-rpc-server']])
             ->getMock();
 
-        $server->setServiceLocator($this->getApplicationServiceLocator());
-
-        $m_cache = $this->getMockBuilder('cache')
+        $m_cache = $this->getMockBuilder('stdClass')
             ->setMethods(array('getItem'))
             ->getMock();
 
@@ -378,10 +356,10 @@ class ServerTest extends AbstractHttpControllerTestCase
 
     public function testSetClass()
     {
-        $mock = $this->getMock('Mock', ['uneMethode']); // new Mock();
+        $mock = $this->getMockBuilder('stdClass')->setMethods(['uneMethode']); 
         $def = new Definition();
 
-        $mock_sm = $this->getMockBuilder('Zend\ServiceManager\ServiceLocatorInterface')
+        $mock_sm = $this->getMockBuilder('Interop\Container\ContainerInterface')
             ->disableOriginalConstructor()
             ->setMethods(array('has', 'get'))
             ->getMock();
@@ -398,7 +376,7 @@ class ServerTest extends AbstractHttpControllerTestCase
 
         $serv = $this->getMockBuilder('JRpc\Json\Server\Server')
             ->setMethods(array('_addMethodServiceMap', '_buildSignature'))
-            ->disableOriginalConstructor()
+            ->setConstructorArgs([$mock_sm,[]])
             ->getMock();
 
         $serv->expects($this->any())
@@ -413,16 +391,15 @@ class ServerTest extends AbstractHttpControllerTestCase
         }), 'maclasse_sm')
             ->will($this->returnValue($def));
 
-        $serv->setServiceLocator($mock_sm);
         $serv->setClass('maclasse_sm', 'ns', array());
     }
 
     public function testSetClassArrayClass()
     {
-        $mock = $this->getMock('Mock', ['uneMethode']); // new Mock();
+        $mock = $this->getMockBuilder('stdClass')->setMethods(['uneMethode']);
         $def = new Definition();
 
-        $mock_sm = $this->getMockBuilder('Zend\ServiceManager\ServiceLocatorInterface')
+        $mock_sm = $this->getMockBuilder('Interop\Container\ContainerInterface')
             ->disableOriginalConstructor()
             ->setMethods(array('has', 'get'))
             ->getMock();
@@ -439,7 +416,7 @@ class ServerTest extends AbstractHttpControllerTestCase
 
         $serv = $this->getMockBuilder('JRpc\Json\Server\Server')
             ->setMethods(array('_addMethodServiceMap', '_buildSignature'))
-            ->disableOriginalConstructor()
+            ->setConstructorArgs([$mock_sm,[]])
             ->getMock();
 
         $serv->expects($this->any())
@@ -454,13 +431,12 @@ class ServerTest extends AbstractHttpControllerTestCase
         }), 'maclasse_sm')
             ->will($this->returnValue($def));
 
-        $serv->setServiceLocator($mock_sm);
         $serv->setClass(['methods' => ['uneMethode'], 'class' => 'maclasse_sm'], 'ns', array());
     }
 
     public function testSetPersistence()
     {
-        $server = new Server();
+        $server = new Server($this->getApplicationServiceLocator(), []);
         $server->setPersistence(true);
 
         $ref_server = new \ReflectionClass('JRpc\Json\Server\Server');
@@ -472,10 +448,7 @@ class ServerTest extends AbstractHttpControllerTestCase
 
     public function testBuildSignature()
     {
-        $sm = $this->getApplicationServiceLocator();
-
-        $serv = new Server();
-        $serv->setServiceLocator($sm);
+        $serv = new Server($this->getApplicationServiceLocator(), []);
 
         $ref = new \ReflectionClass('\JRpc\Json\Server\Server');
         $methode = $ref->getMethod('_buildSignature');
@@ -491,10 +464,8 @@ class ServerTest extends AbstractHttpControllerTestCase
 
     public function testGetPersistenceByConfig()
     {
-        $sm = $this->getApplicationServiceLocator();
-
-        $server = new Server();
-        $server->setServiceLocator($sm);
+        $container = $this->getApplicationServiceLocator();
+        $server = new Server($container, $container->get('Config')['json-rpc-server']);
 
         $out = $server->getPersistence();
 
@@ -503,10 +474,8 @@ class ServerTest extends AbstractHttpControllerTestCase
 
     public function testGetCacheByConfig()
     {
-        $sm = $this->getApplicationServiceLocator();
-
-        $server = new Server();
-        $server->setServiceLocator($sm);
+        $container = $this->getApplicationServiceLocator();
+        $server = new Server($container, $container->get('Config')['json-rpc-server']);
 
         $out = $server->getCache();
 
@@ -524,7 +493,7 @@ class ServerTest extends AbstractHttpControllerTestCase
             ->with(array('JRpc\Json\Server\Server', 'JRpc\Json\Server\Server'))
             ->will($this->returnSelf());
 
-        $server = new Server();
+        $server = new Server($this->getApplicationServiceLocator(), []);
 
         $ref_server = new \ReflectionClass('JRpc\Json\Server\Server');
         $ref_events = $ref_server->getProperty('events');
@@ -536,7 +505,8 @@ class ServerTest extends AbstractHttpControllerTestCase
 
     public function testGetEventManagerByDefault()
     {
-        $server = new Server();
+        
+        $server = new Server($this->getApplicationServiceLocator(), []);
 
         $ref_server = new \ReflectionClass('JRpc\Json\Server\Server');
         $ref_events = $ref_server->getProperty('events');

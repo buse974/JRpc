@@ -15,6 +15,7 @@ class JsonRpcControllerTest extends AbstractHttpControllerTestCase
     public function testHandleActionPost()
     {
         $mock_server = $this->getMockBuilder('JRpc\Json\Server\Server')
+            ->disableOriginalConstructor()
             ->setMethods(array('setReturnResponse', 'initializeClass', 'getServiceMap', 'multiHandle'))
             ->getMock();
 
@@ -33,7 +34,8 @@ class JsonRpcControllerTest extends AbstractHttpControllerTestCase
             ->method('multiHandle')
             ->will($this->returnValue(array('multiHandle')));
 
-        $sm = $this->getApplicationServiceLocator()->setAllowOverride(true);
+        $sm = $this->getApplication()->getServiceManager();
+        $sm->setAllowOverride(true);
         $sm->setService('json_server', $mock_server);
 
         $this->dispatch('/api.json-rpc', 'POST');
@@ -49,6 +51,7 @@ class JsonRpcControllerTest extends AbstractHttpControllerTestCase
     public function testHandleActionOptions()
     {
         $mock_server = $this->getMockBuilder('JRpc\Json\Server\Server')
+            ->disableOriginalConstructor()
             ->setMethods(array('getResponse'))
             ->getMock();
 
@@ -56,7 +59,8 @@ class JsonRpcControllerTest extends AbstractHttpControllerTestCase
             ->method('getResponse')
             ->with(true);
 
-        $sm = $this->getApplicationServiceLocator()->setAllowOverride(true);
+        $sm = $this->getApplication()->getServiceManager();
+        $sm->setAllowOverride(true);
         $sm->setService('json_server', $mock_server);
 
         $this->dispatch('/api.json-rpc', 'OPTIONS');
@@ -72,6 +76,7 @@ class JsonRpcControllerTest extends AbstractHttpControllerTestCase
     public function testHandleActionGet()
     {
         $mock_server = $this->getMockBuilder('JRpc\Json\Server\Server')
+            ->disableOriginalConstructor()
             ->setMethods(array('setReturnResponse', 'initializeClass', 'getServiceMap', 'handle'))
             ->getMock();
 
@@ -90,7 +95,8 @@ class JsonRpcControllerTest extends AbstractHttpControllerTestCase
             ->method('handle')
             ->will($this->returnValue(array('handle')));
 
-        $sm = $this->getApplicationServiceLocator()->setAllowOverride(true);
+        $sm = $this->getApplication()->getServiceManager();
+        $sm->setAllowOverride(true);
         $sm->setService('json_server', $mock_server);
 
         $this->dispatch('/api.json-rpc', 'GET');
@@ -99,7 +105,6 @@ class JsonRpcControllerTest extends AbstractHttpControllerTestCase
         $this->assertActionName('handle');
         $this->assertResponseStatusCode(200);
 
-        $this->assertEquals('getServiceMap', current($this->getResponse()
-            ->getContent()));
+        $this->assertEquals('getServiceMap', current($this->getResponse()->getContent()));
     }
 }

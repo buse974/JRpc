@@ -6,11 +6,14 @@ return array(
                 'ViewJsonStrategy',
         ),
     ),
-    'service_manager' => array(
-        'invokables' => array(
-            'json_server' => 'JRpc\Json\Server\Server',
-        ),
-    ),
+    'controller_plugins' => [
+        'aliases' => [
+            'jrpc' => 'jrpc_s',
+        ],
+        'factories' => [
+            'jrpc_s' => JRpc\Controller\Plugin\JrpcFactory::class,
+        ],
+    ],
     'router' => array(
         'routes' => array(
             'api.json-rpc' => array(
