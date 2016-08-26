@@ -321,7 +321,6 @@ class ServerTest extends AbstractHttpControllerTestCase
     public function testInitializeClassByCache()
     {
         $container = $this->getApplicationServiceLocator();
-
         $server = $this->getMockBuilder('JRpc\Json\Server\Server')
             ->setMethods(array('getCache'))
             ->setConstructorArgs([$container,$container->get('Config')['json-rpc-server']])

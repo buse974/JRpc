@@ -9,7 +9,6 @@ class JsonRpcController extends AbstractActionController
 {
     public function handleAction()
     {
-        
         $headers = $this->getResponse()->getHeaders();
         $method = $this->getRequest()->getMethod();
         
@@ -32,5 +31,4 @@ class JsonRpcController extends AbstractActionController
         
         return $this->getResponse()->setContent($content);
     }
-
 }
