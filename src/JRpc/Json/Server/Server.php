@@ -33,7 +33,7 @@ class Server extends BaseServer implements EventManagerAwareInterface
      *
      * @var \Zend\EventManager\EventManagerInterface
      */
-    protected $events;
+    protected $events = null;
 
     /**
      *
@@ -76,14 +76,14 @@ class Server extends BaseServer implements EventManagerAwareInterface
      *
      * @see \Zend\Json\Server\Server::_handle()
      */
-    protected function _handle()
+    protected function handleRequest()
     {
         try {
             $request = $this->getRequest();
             if ($request->isParseError() === true) {
                 throw new ParseErrorException();
             }
-            $this->getEventManager()->trigger('sendRequest.pre', $this, array('methode' => $request->getMethod()));
+            $this->events->trigger('sendRequest.pre', $this, array('methode' => $request->getMethod()));
             if (($ret = $this->getParentHandle()) instanceof RPCERROR && ($ret = $ret->getData()) instanceof \Exception) {
                 throw $ret;
             }
@@ -109,7 +109,7 @@ class Server extends BaseServer implements EventManagerAwareInterface
      */
     protected function getParentHandle()
     {
-        return parent::_handle();
+        return parent::handleRequest();
     }
 
     /**
@@ -328,8 +328,8 @@ class Server extends BaseServer implements EventManagerAwareInterface
      */
     public function setEventManager(\Zend\EventManager\EventManagerInterface $events)
     {
-        $events->setIdentifiers(array(__CLASS__,get_called_class()));
         $this->events = $events;
+        $this->events->setIdentifiers([__CLASS__,get_called_class()]);
         
         return $this;
     }
@@ -341,10 +341,6 @@ class Server extends BaseServer implements EventManagerAwareInterface
      */
     public function getEventManager()
     {
-        if (null === $this->events) {
-            $this->setEventManager(new EventManager());
-        }
-        
         return $this->events;
     }
 }

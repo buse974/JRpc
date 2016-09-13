@@ -25,7 +25,7 @@ class Module implements ConfigProviderInterface
             ],
             'factories' => [
                 JRpc\Json\Server\Server::class => function ($container, $requestedName, $options) {
-                    return new Server($container, $container->get('config')['json-rpc-server']);
+                    return  new Server($container, $container->get('config')['json-rpc-server']);
                 },
             ],
         ];
