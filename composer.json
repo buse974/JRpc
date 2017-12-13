@@ -19,7 +19,7 @@
   },
   "require-dev" : {
     "satooshi/php-coveralls": "1.0.0",
-    "fabpot/php-cs-fixer":"*",
+    "friendsofphp/php-cs-fixer" : "*",
     "zendframework/zend-test":"*",
     "phpunit/phpunit" : ">=4"
   },
