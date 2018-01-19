@@ -1,32 +1,33 @@
 {
-  "name": "buse974/jrpc",
-  "description": "Json Rpc Server for ZF3",
-  "type": "library",
-  "homepage": "https://github.com/buse974/JRpc",
-  "license": "MIT",
-  "authors": [
-    {
-      "name": "Christophe Robert",
-      "email": "christophe.robert@ti1.fr"
-    }
-  ],
-  "require": {
-    "php": ">=5.6",
-    "zendframework/zend-servicemanager":"*",
-    "zendframework/zend-mvc":"*",
-    "zendframework/zend-json-server":"*",
-    "zendframework/zend-router":"*"
-  },
-  "require-dev" : {
-    "satooshi/php-coveralls": "1.0.0",
-    "friendsofphp/php-cs-fixer" : "*",
-    "zendframework/zend-test":"*",
-    "phpunit/phpunit" : ">=4"
-  },
-  "autoload": {
-        "psr-4": { "JRpc\\": "src/" }
-  },
-  "config": {
-       "bin-dir": "bin/"
-  }
+	"name" : "buse974/jrpc",
+	"description" : "Json Rpc Server for ZF3",
+	"type" : "library",
+	"homepage" : "https://github.com/buse974/JRpc",
+	"license" : "MIT",
+	"authors" : [{
+			"name" : "Christophe Robert",
+			"email" : "christophe.robert@ti1.fr"
+		}
+	],
+	"require" : {
+		"php" : ">=5.6",
+		"zendframework/zend-servicemanager" : "*",
+		"zendframework/zend-json-server" : "*",
+		"zendframework/zend-router" : "*",
+		"zendframework/zend-cache" : "*"
+	},
+	"require-dev" : {
+		"satooshi/php-coveralls" : "1.0.0",
+		"friendsofphp/php-cs-fixer" : "*",
+		"zendframework/zend-test" : "*",
+		"phpunit/phpunit" : ">=4"
+	},
+	"autoload" : {
+		"psr-4" : {
+			"JRpc\\" : "src/"
+		}
+	},
+	"config" : {
+		"bin-dir" : "bin/"
+	}
 }

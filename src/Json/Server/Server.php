@@ -3,7 +3,6 @@ namespace JRpc\Json\Server;
 
 use Zend\Json\Server\Server as BaseServer;
 use Zend\EventManager\EventManagerAwareInterface;
-use Zend\EventManager\EventManager;
 use Zend\Json\Server\Error as RPCERROR;
 use JRpc\Json\Server\Exception\AbstractException;
 use JRpc\Json\Server\Exception\ParseErrorException;
@@ -37,7 +36,7 @@ class Server extends BaseServer implements EventManagerAwareInterface
 
     /**
      *
-     * @var \Zend\Cache\Storage\StorageInterface|null
+     * @var \Zend\Cache\Storage\StorageInterface |null
      */
     protected $cache;
 
@@ -139,7 +138,13 @@ class Server extends BaseServer implements EventManagerAwareInterface
         }
         
         foreach ($this->options['services'] as $c) {
-            $this->setClass($c, ((isset($c['namespace'])) ? $c['namespace'] : ''));
+            try {
+                $this->setClass($c, ((isset($c['namespace'])) ? $c['namespace'] : ''));
+            } catch (\Exception $e) {
+                //$this->container->get($this->options['log'])->err($e->getMessage() . ': '. $c);
+                //print_r($c);
+                //print_r("\n <br>");
+            }
         }
         
         if ($this->getPersistence() && $this->getCache() !== null) {
