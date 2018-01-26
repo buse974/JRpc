@@ -3,7 +3,6 @@ namespace JRpc\Json\Server;
 
 use Zend\Json\Server\Server as BaseServer;
 use Zend\EventManager\EventManagerAwareInterface;
-use Zend\EventManager\EventManager;
 use Zend\Json\Server\Error as RPCERROR;
 use JRpc\Json\Server\Exception\AbstractException;
 use JRpc\Json\Server\Exception\ParseErrorException;
@@ -14,10 +13,8 @@ use Zend\Code\Reflection\DocBlockReflection;
 use Zend\Json;
 use Zend\Json\Server\Request;
 use Zend\ServiceManager\PluginManagerInterface;
-use Zend\Mvc\Controller\PluginManager;
-use Zend\ServiceManager\ServiceManager;
 use Interop\Container\ContainerInterface;
-use Zend\Server\AbstractServer;
+use Zend\Json\Exception;
 
 class Server extends BaseServer implements EventManagerAwareInterface
 {

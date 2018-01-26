@@ -8,10 +8,8 @@
  */
 namespace JRpc\Controller\Plugin;
 
-use Jrpc\Controller\Plugin;
 use Interop\Container\ContainerInterface;
 use Zend\ServiceManager\Factory\FactoryInterface;
-use JRpc\Json\Server\Server;
 
 class JrpcFactory implements FactoryInterface
 {

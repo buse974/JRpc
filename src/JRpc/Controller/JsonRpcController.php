@@ -3,7 +3,6 @@
 namespace JRpc\Controller;
 
 use Zend\Mvc\Controller\AbstractActionController;
-use JRpc\Json\Server\Server;
 
 class JsonRpcController extends AbstractActionController
 {
@@ -15,7 +14,11 @@ class JsonRpcController extends AbstractActionController
         $jrpcconfig =  $this->jrpc()->getSettings();
         if (isset($jrpcconfig['headers'])) {
             foreach ($jrpcconfig['headers'] as $key => $value) {
-                $headers->addHeaderLine($key, $value);
+                if(is_callable($value)) {
+                    $headers->addHeaderLine($key, $value());
+                } else {
+                    $headers->addHeaderLine($key, $value);
+                }
             }
         }
         

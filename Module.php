@@ -1,8 +1,8 @@
 <?php
 namespace JRpc;
 
-use Zend\ModuleManager\Feature\ConfigProviderInterface;
-use JRpc\Json\Server\Server;
+use \Zend\ModuleManager\Feature\ConfigProviderInterface;
+use \JRpc\Json\Server\Server;
 
 class Module implements ConfigProviderInterface
 {
@@ -21,10 +21,10 @@ class Module implements ConfigProviderInterface
     {
         return [
             'aliases' => [
-                'json_server' => JRpc\Json\Server\Server::class
+                'json_server' => Json\Server\Server::class
             ],
             'factories' => [
-                JRpc\Json\Server\Server::class => function ($container, $requestedName, $options) {
+                Json\Server\Server::class => function ($container, $requestedName, $options) {
                     return  new Server($container, $container->get('config')['json-rpc-server']);
                 },
             ],
