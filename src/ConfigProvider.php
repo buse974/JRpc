@@ -3,8 +3,7 @@
 namespace JRpc;
 
 use Interop\Http\ServerMiddleware\DelegateInterface;
-use JRpc\Json\Server\Server;
-use Zend\Diactoros\Response\JsonResponse;
+use Zend\Diactoros\Response\TextResponse;
 
 /**
  * The configuration provider for the App module
@@ -37,15 +36,19 @@ class ConfigProvider
     {
         return [
             'factories'  => [
+                Json\Server\Server::class => function ($container) {
+                    return new Json\Server\Server($container, $container->get('config')['json-rpc-server']);
+                },
                 'Action\JrpcAction' => function ( $container) {
                     
                     return function ($request, DelegateInterface $delegate) use ($container) {
+
                         $method  = $request->getMethod();
                         $headers = [];
                         $jrpcconfig = $container->get('config')['json-rpc-server'];
                         if('POST' === $method || ('GET' === $method && $jrpcconfig['environment'] === 'dev')) {
-                            $server = new Server($container, $jrpcconfig);
-                            $server->setReturnResponse(false);
+                            $server = $container->get(Json\Server\Server::class);
+                            $server->setReturnResponse(true);
                             $server->initializeClass();
                             
                             $headers = ['Content-Type' => 'application/json'];
@@ -53,8 +56,8 @@ class ConfigProvider
                         } else {
                             $content = "";
                         }
-                        
-                        return new JsonResponse($content, 200, $headers);
+
+                        return new TextResponse((string) $content , 200, $headers);
                     };
                 },
             ],

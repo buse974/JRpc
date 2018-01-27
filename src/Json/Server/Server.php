@@ -2,7 +2,6 @@
 namespace JRpc\Json\Server;
 
 use Zend\Json\Server\Server as BaseServer;
-use Zend\EventManager\EventManagerAwareInterface;
 use Zend\Json\Server\Error as RPCERROR;
 use JRpc\Json\Server\Exception\AbstractException;
 use JRpc\Json\Server\Exception\ParseErrorException;
@@ -12,27 +11,11 @@ use Zend\Server\Method\Parameter;
 use Zend\Code\Reflection\DocBlockReflection;
 use Zend\Json;
 use Zend\Json\Server\Request;
-use Zend\ServiceManager\PluginManagerInterface;
-use Zend\Mvc\Controller\PluginManager;
-use Zend\ServiceManager\ServiceManager;
 use Interop\Container\ContainerInterface;
-use Zend\Server\AbstractServer;
+use Zend\Json\Server\Exception;
 
-class Server extends BaseServer implements EventManagerAwareInterface
+class Server extends BaseServer
 {
-
-    /**
-     *
-     * @var PluginManagerInterface
-     *
-     */
-    protected $plugins;
-
-    /**
-     *
-     * @var \Zend\EventManager\EventManagerInterface
-     */
-    protected $events = null;
 
     /**
      *
@@ -82,7 +65,6 @@ class Server extends BaseServer implements EventManagerAwareInterface
             if ($request->isParseError() === true) {
                 throw new ParseErrorException();
             }
-            $this->events->trigger('sendRequest.pre', $this, array('methode' => $request->getMethod()));
             if (($ret = $this->getParentHandle()) instanceof RPCERROR && ($ret = $ret->getData()) instanceof \Exception) {
                 throw $ret;
             }
@@ -326,26 +308,4 @@ class Server extends BaseServer implements EventManagerAwareInterface
         return $this->cache;
     }
 
-    /**
-     * Inject an EventManager instance.
-     *
-     * @param \Zend\EventManager\EventManagerInterface $eventManager            
-     */
-    public function setEventManager(\Zend\EventManager\EventManagerInterface $events)
-    {
-        $this->events = $events;
-        $this->events->setIdentifiers([__CLASS__,get_called_class()]);
-        
-        return $this;
-    }
-
-    /**
-     * (non-PHPdoc).
-     *
-     * @return \Zend\EventManager\EventManagerInterface
-     */
-    public function getEventManager()
-    {
-        return $this->events;
-    }
 }
