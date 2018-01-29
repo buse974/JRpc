@@ -100,7 +100,18 @@ class Server extends BaseServer
      */
     public function _dispatch(\Zend\Server\Method\Definition $invocable, array $params)
     {
-        return call_user_func_array(array($this->container->get($invocable->getNameSm()),$invocable->getCallback()->getMethod()), $params);
+        return call_user_func_array([$this->container->get($invocable->getNameSm()),$invocable->getCallback()->getMethod()], $params);
+    }
+    
+    /**
+     * 
+     * @param \Zend\Server\Method\Definition $invocable
+     * @param array $params
+     * @return mixed
+     */
+    public function dispatch(\Zend\Server\Method\Definition $invocable, array $params)
+    {
+        return $this->_dispatch($invocable, $params);
     }
 
     /**
@@ -161,7 +172,7 @@ class Server extends BaseServer
             $request->setOptions($post);
             $request->setVersion(self::VERSION_2);
             $this->setRequest($request);
-            
+
             $content = $this->handle();
         }
         

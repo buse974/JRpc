@@ -20,10 +20,18 @@ class ConfigProvider
      *
      * @return array
      */
-    public function __invoke()
+    public function __invoke() : array
     {
         return [
             'dependencies' => $this->getDependencies(),
+            'routes'       => $this->getRoutes(),
+            'json-rpc-server' => [
+                'cache' => 'storage_memcached',
+                'log' => 'log-system',
+                'persistence' => false,
+                'environment' => 'prod', /* dev|prod */
+                'services' => [],
+            ],
         ];
     }
 
@@ -32,17 +40,15 @@ class ConfigProvider
      *
      * @return array
      */
-    public function getDependencies()
+    public function getDependencies() : array
     {
         return [
             'factories'  => [
-                Json\Server\Server::class => function ($container) {
+                Json\Server\Server::class => function ( $container ) {
                     return new Json\Server\Server($container, $container->get('config')['json-rpc-server']);
                 },
-                'Action\JrpcAction' => function ( $container) {
-                    
+                'Action\JrpcAction' => function ( $container ) {
                     return function ($request, DelegateInterface $delegate) use ($container) {
-
                         $method  = $request->getMethod();
                         $headers = [];
                         $jrpcconfig = $container->get('config')['json-rpc-server'];
@@ -60,6 +66,18 @@ class ConfigProvider
                         return new TextResponse((string) $content , 200, $headers);
                     };
                 },
+            ],
+        ];
+    }
+    
+    public function getRoutes() : array
+    {
+        return [
+            [
+                'name'            => 'jrpc',
+                'path'            => '/api-json.rpc',
+                'middleware'      => 'Action\JrpcAction',
+                'allowed_methods' => ['POST', 'GET', 'OPTIONS'],
             ],
         ];
     }
