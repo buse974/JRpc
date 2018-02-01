@@ -49,16 +49,16 @@ class ConfigProvider
                 },
                 'Action\JrpcAction' => function ( $container ) {
                     return function ($request, DelegateInterface $delegate) use ($container) {
+                        $content = "";
                         $method  = $request->getMethod();
-                        $headers = [];
+                        $headers = $container->get('config')['json-rpc-server']['headers'];
                         $jrpcconfig = $container->get('config')['json-rpc-server'];
                         if('POST' === $method || ('GET' === $method && $jrpcconfig['environment'] === 'dev')) {
                             $server = $container->get(Json\Server\Server::class);
                             $server->setReturnResponse(true);
                             $server->initializeClass();
-                            
-                            $headers = ['Content-Type' => 'application/json'];
-                            $content = ('POST' === $method) ? $server->multiHandle() : $server->getServiceMap()->toArray();
+                            $headers = array_merge($headers, ['Content-Type' => 'application/json']);
+                            $content = ('POST' === $method) ? $server->multiHandle() : $server->getServiceMap();
                         } else {
                             $content = "";
                         }
@@ -75,7 +75,7 @@ class ConfigProvider
         return [
             [
                 'name'            => 'jrpc',
-                'path'            => '/api-json.rpc',
+                'path'            => '/api.json-rpc',
                 'middleware'      => 'Action\JrpcAction',
                 'allowed_methods' => ['POST', 'GET', 'OPTIONS'],
             ],
