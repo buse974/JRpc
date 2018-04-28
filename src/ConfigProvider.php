@@ -2,9 +2,6 @@
 
 namespace JRpc;
 
-use Interop\Http\ServerMiddleware\DelegateInterface;
-use Zend\Diactoros\Response\TextResponse;
-
 /**
  * The configuration provider for the App module
  *
@@ -47,24 +44,12 @@ class ConfigProvider
                 Json\Server\Server::class => function ( $container ) {
                     return new Json\Server\Server($container, $container->get('config')['json-rpc-server']);
                 },
-                'Action\JrpcAction' => function ( $container ) {
-                    return function ($request, DelegateInterface $delegate) use ($container) {
-                        $content = "";
-                        $method  = $request->getMethod();
-                        $headers = $container->get('config')['json-rpc-server']['headers'];
-                        $jrpcconfig = $container->get('config')['json-rpc-server'];
-                        if('POST' === $method || ('GET' === $method && $jrpcconfig['environment'] === 'dev')) {
-                            $server = $container->get(Json\Server\Server::class);
-                            $server->setReturnResponse(true);
-                            $server->initializeClass();
-                            $headers = array_merge($headers, ['Content-Type' => 'application/json']);
-                            $content = ('POST' === $method) ? $server->multiHandle() : $server->getServiceMap();
-                        } else {
-                            $content = "";
-                        }
-
-                        return new TextResponse((string) $content , 200, $headers);
-                    };
+                Action\JrpcAction::class => function ( $container ) {
+                    $jrpc_config = $container->get('config')['json-rpc-server'];
+                    $headers = $jrpc_config['headers'];
+                    $server = $container->get(Json\Server\Server::class);
+                    
+                    return new Action\JrpcAction($server, $jrpc_config, $headers);
                 },
             ],
         ];
@@ -76,7 +61,7 @@ class ConfigProvider
             [
                 'name'            => 'jrpc',
                 'path'            => '/api.json-rpc',
-                'middleware'      => 'Action\JrpcAction',
+                'middleware'      => Action\JrpcAction::class,
                 'allowed_methods' => ['POST', 'GET', 'OPTIONS'],
             ],
         ];
